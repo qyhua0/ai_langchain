@@ -33,7 +33,7 @@ df = pd.DataFrame(data).sort_values('销售日期')
 llm = ChatOpenAI(
     base_url="https://api.deepseek.com/v1",  # DeepSeek API端点
     model="deepseek-chat",                  # DeepSeek模型标识
-    openai_api_key="sk-edddxxxxxxxxxxxxxxxxxxxx",     # 替换为DeepSeek密钥
+    openai_api_key="sk-xxxxxxxxxxxxxxxxxxxxxxxx",     # 替换为DeepSeek密钥
     max_tokens=1000,
     temperature=0
 )
