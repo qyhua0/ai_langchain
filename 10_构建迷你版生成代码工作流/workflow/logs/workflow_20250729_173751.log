@@ -1,0 +1,7 @@
+{"timestamp": "2025-07-29 17:37:51", "level": "INFO", "message": "开始执行工作流: 全栈应用代码生成工作流"}
+{"timestamp": "2025-07-29T17:39:36.550254", "step_name": "architecture_design", "duration": 104.84134840965271, "success": true, "input_size": 41, "output_size": 5820, "error_message": null}
+{"timestamp": "2025-07-29T17:42:14.331289", "step_name": "api_definition", "duration": 157.7800371646881, "success": true, "input_size": 6263, "output_size": 6304, "error_message": null}
+{"timestamp": "2025-07-29T17:45:10.524477", "step_name": "frontend_generation", "duration": 176.1921844482422, "success": true, "input_size": 6739, "output_size": 9095, "error_message": null}
+{"timestamp": "2025-07-29T17:48:44.433539", "step_name": "backend_generation", "duration": 213.90507245063782, "success": true, "input_size": 12851, "output_size": 16415, "error_message": null}
+{"timestamp": "2025-07-29T17:51:07.871144", "step_name": "code_review", "duration": 143.43660736083984, "success": true, "input_size": 26752, "output_size": 5245, "error_message": null}
+{"timestamp": "2025-07-29 17:51:07", "level": "INFO", "message": "工作流执行完成"}

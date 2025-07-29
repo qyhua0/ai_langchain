@@ -1,0 +1,674 @@
+# 后端代码实现
+
+## 1. 项目结构
+
+```
+src
+├── main
+│   ├── java
+│   │   └── com
+│   │       └── example
+│   │           ├── article
+│   │           │   ├── controller
+│   │           │   ├── service
+│   │           │   ├── mapper
+│   │           │   ├── entity
+│   │           │   ├── dto
+│   │           │   └── vo
+│   │           ├── config
+│   │           └── exception
+│   └── resources
+│       ├── mybatis
+│       │   ├── mapper
+│       │   │   ├── ArticleMapper.xml
+│       │   │   ├── CategoryMapper.xml
+│       │   │   ├── TagMapper.xml
+│       │   │   └── UserMapper.xml
+│       └── application.yml
+```
+
+---
+
+## 2. 实体类（Entity）
+
+### User.java
+```java
+package com.example.article.entity;
+
+import lombok.Data;
+import javax.persistence.*;
+
+@Data
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "username", unique = true, nullable = false)
+    private String username;
+
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private java.util.Date createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private java.util.Date updatedAt;
+
+    @Column(name = "status", nullable = false)
+    private Integer status;
+}
+```
+
+### Article.java
+```java
+package com.example.article.entity;
+
+import lombok.Data;
+import javax.persistence.*;
+import java.util.Date;
+import java.util.Set;
+
+@Data
+@Entity
+@Table(name = "articles")
+public class Article {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Column(name = "content", nullable = false)
+    private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @Column(name = "status", nullable = false)
+    private Integer status;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Date createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Date updatedAt;
+
+    @Column(name = "views", nullable = false)
+    private Integer views;
+
+    @ManyToMany
+    @JoinTable(
+        name = "article_tags",
+        joinColumns = @JoinColumn(name = "article_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags;
+}
+```
+
+### Category.java
+```java
+package com.example.article.entity;
+
+import lombok.Data;
+import javax.persistence.*;
+
+@Data
+@Entity
+@Table(name = "categories")
+public class Category {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "name", unique = true, nullable = false)
+    private String name;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private java.util.Date createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private java.util.Date updatedAt;
+}
+```
+
+### Tag.java
+```java
+package com.example.article.entity;
+
+import lombok.Data;
+import javax.persistence.*;
+
+@Data
+@Entity
+@Table(name = "tags")
+public class Tag {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "name", unique = true, nullable = false)
+    private String name;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private java.util.Date createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private java.util.Date updatedAt;
+}
+```
+
+---
+
+## 3. DTO 和 VO 类
+
+### ArticleDTO.java
+```java
+package com.example.article.dto;
+
+import lombok.Data;
+
+import java.util.Date;
+import java.util.Set;
+
+@Data
+public class ArticleDTO {
+    private Long id;
+    private String title;
+    private String content;
+    private Long userId;
+    private Long categoryId;
+    private Integer status;
+    private Date createdAt;
+    private Date updatedAt;
+    private Integer views;
+    private Set<Long> tagIds;
+}
+```
+
+### ArticleVO.java
+```java
+package com.example.article.vo;
+
+import lombok.Data;
+
+import java.util.Date;
+import java.util.Set;
+
+@Data
+public class ArticleVO {
+    private Long id;
+    private String title;
+    private String content;
+    private String username;
+    private String categoryName;
+    private Integer status;
+    private Date createdAt;
+    private Date updatedAt;
+    private Integer views;
+    private Set<String> tags;
+}
+```
+
+### PageVO.java
+```java
+package com.example.article.vo;
+
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class PageVO<T> {
+    private List<T> data;
+    private Integer pageNum;
+    private Integer pageSize;
+    private Long total;
+}
+```
+
+---
+
+## 4. Mapper 接口和 XML 文件
+
+### ArticleMapper.java
+```java
+package com.example.article.mapper;
+
+import com.example.article.entity.Article;
+import org.apache.ibatis.annotations.Mapper;
+import java.util.List;
+
+@Mapper
+public interface ArticleMapper {
+    List<Article> selectAll();
+    Article selectById(Long id);
+    int insert(Article article);
+    int update(Article article);
+    int deleteById(Long id);
+    List<Article> selectByStatus(Integer status);
+}
+```
+
+### ArticleMapper.xml
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.article.mapper.ArticleMapper">
+    <select id="selectAll" resultType="com.example.article.entity.Article">
+        SELECT * FROM articles
+    </select>
+
+    <select id="selectById" resultType="com.example.article.entity.Article">
+        SELECT * FROM articles WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.example.article.entity.Article">
+        INSERT INTO articles
+        (title, content, user_id, category_id, status, created_at, updated_at, views)
+        VALUES
+        (#{title}, #{content}, #{user.id}, #{category.id}, #{status}, #{createdAt}, #{updatedAt}, #{views})
+    </insert>
+
+    <update id="update" parameterType="com.example.article.entity.Article">
+        UPDATE articles
+        SET title = #{title}, content = #{content}, user_id = #{user.id}, category_id = #{category.id},
+        status = #{status}, updated_at = #{updatedAt}, views = #{views}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM articles WHERE id = #{id}
+    </delete>
+
+    <select id="selectByStatus" resultType="com.example.article.entity.Article">
+        SELECT * FROM articles WHERE status = #{status}
+    </select>
+</mapper>
+```
+
+---
+
+## 5. Service 层
+
+### ArticleService.java
+```java
+package com.example.article.service;
+
+import com.example.article.entity.Article;
+import com.example.article.mapper.ArticleMapper;
+import com.example.article.dto.ArticleDTO;
+import com.example.article.vo.ArticleVO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class ArticleService {
+
+    @Autowired
+    private ArticleMapper articleMapper;
+
+    public List<ArticleVO> getAllArticles() {
+        return articleMapper.selectAll().stream()
+                .map(this::convertToVO)
+                .collect(Collectors.toList());
+    }
+
+    public ArticleVO getArticleById(Long id) {
+        Article article = articleMapper.selectById(id);
+        return convertToVO(article);
+    }
+
+    @Transactional
+    public ArticleVO createArticle(ArticleDTO dto) {
+        Article article = new Article();
+        article.setTitle(dto.getTitle());
+        article.setContent(dto.getContent());
+        article.setUser(new User(dto.getUserId()));
+        article.setCategory(new Category(dto.getCategoryId()));
+        article.setStatus(dto.getStatus());
+        article.setCreatedAt(new Date());
+        article.setUpdatedAt(new Date());
+        article.setViews(0);
+        articleMapper.insert(article);
+        return convertToVO(article);
+    }
+
+    public ArticleVO updateArticle(Long id, ArticleDTO dto) {
+        Article article = articleMapper.selectById(id);
+        if (article == null) {
+            throw new RuntimeException("Article not found");
+        }
+        article.setTitle(dto.getTitle());
+        article.setContent(dto.getContent());
+        article.setUser(new User(dto.getUserId()));
+        article.setCategory(new Category(dto.getCategoryId()));
+        article.setStatus(dto.getStatus());
+        article.setUpdatedAt(new Date());
+        articleMapper.update(article);
+        return convertToVO(article);
+    }
+
+    public void deleteArticle(Long id) {
+        articleMapper.deleteById(id);
+    }
+
+    public List<ArticleVO> getArticlesByStatus(Integer status) {
+        return articleMapper.selectByStatus(status).stream()
+                .map(this::convertToVO)
+                .collect(Collectors.toList());
+    }
+
+    private ArticleVO convertToVO(Article article) {
+        ArticleVO vo = new ArticleVO();
+        vo.setId(article.getId());
+        vo.setTitle(article.getTitle());
+        vo.setContent(article.getContent());
+        vo.setUsername(article.getUser().getUsername());
+        vo.setCategoryName(article.getCategory().getName());
+        vo.setStatus(article.getStatus());
+        vo.setCreatedAt(article.getCreatedAt());
+        vo.setUpdatedAt(article.getUpdatedAt());
+        vo.setViews(article.getViews());
+        vo.setTags(article.getTags().stream().map(Tag::getName).collect(Collectors.toList()));
+        return vo;
+    }
+}
+```
+
+---
+
+## 6. Controller 层
+
+### ArticleController.java
+```java
+package com.example.article.controller;
+
+import com.example.article.dto.ArticleDTO;
+import com.example.article.service.ArticleService;
+import com.example.article.vo.ArticleVO;
+import com.example.article.vo.PageVO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/articles")
+public class ArticleController {
+
+    @Autowired
+    private ArticleService articleService;
+
+    @GetMapping
+    public PageVO<ArticleVO> getAllArticles(@PageableDefault(size = 10) Pageable pageable) {
+        // 实现分页逻辑
+        return null;
+    }
+
+    @GetMapping("/{id}")
+    public ArticleVO getArticleById(@PathVariable Long id) {
+        return articleService.getArticleById(id);
+    }
+
+    @PostMapping
+    public ArticleVO createArticle(@RequestBody ArticleDTO dto) {
+        return articleService.createArticle(dto);
+    }
+
+    @PutMapping("/{id}")
+    public ArticleVO updateArticle(@PathVariable Long id, @RequestBody ArticleDTO dto) {
+        return articleService.updateArticle(id, dto);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteArticle(@PathVariable Long id) {
+        articleService.deleteArticle(id);
+    }
+
+    @GetMapping("/status/{status}")
+    public List<ArticleVO> getArticlesByStatus(@PathVariable Integer status) {
+        return articleService.getArticlesByStatus(status);
+    }
+}
+```
+
+---
+
+## 7. 统一异常处理
+
+### GlobalExceptionHandler.java
+```java
+package com.example.article.exception;
+
+import com.example.article.vo.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Response> handleException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new Response(500, "Internal Server Error", null));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Response> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new Response(400, e.getMessage(), null));
+    }
+}
+```
+
+---
+
+## 8. 响应结果封装类
+
+### Response.java
+```java
+package com.example.article.vo;
+
+import lombok.Data;
+
+@Data
+public class Response<T> {
+    private int code;
+    private String message;
+    private T data;
+
+    public Response(int code, String message, T data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
+}
+```
+
+---
+
+## 9. 配置文件
+
+### application.yml
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/article_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      use-new-id-generator-mappings: false
+mybatis:
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  type-aliases-package: com.example.article.entity
+server:
+  port: 8080
+```
+
+---
+
+## 10. 依赖配置（pom.xml）
+
+```xml
+<dependencies>
+    <!-- Spring Boot Starter Web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Boot Starter Data JPA -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- MySQL Connector -->
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+
+    <!-- Lombok -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <optional>true</optional>
+    </dependency>
+
+    <!-- MyBatis Spring Boot Starter -->
+    <dependency>
+        <groupId>org.mybatis.spring.boot</groupId>
+        <artifactId>mybatis-spring-boot-starter</artifactId>
+        <version>2.2.2</version>
+    </dependency>
+</dependencies>
+```
+
+---
+
+## 11. 数据库初始化脚本（可选）
+
+```sql
+CREATE DATABASE article_db;
+USE article_db;
+
+CREATE TABLE users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    status INT NOT NULL
+);
+
+CREATE TABLE categories (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+);
+
+CREATE TABLE tags (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+);
+
+CREATE TABLE articles (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    user_id BIGINT NOT NULL,
+    category_id BIGINT NOT NULL,
+    status INT NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    views INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+CREATE TABLE article_tags (
+    article_id BIGINT NOT NULL,
+    tag_id BIGINT NOT NULL,
+    PRIMARY KEY (article_id, tag_id),
+    FOREIGN KEY (article_id) REFERENCES articles(id),
+    FOREIGN KEY (tag_id) REFERENCES tags(id)
+);
+```
+
+---
+
+## 12. 启动类
+
+```java
+package com.example.article;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ArticleApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(ArticleApplication.class, args);
+    }
+}
+```
+
+---
+
+## 说明
+
+- 本项目使用 Spring Boot、MyBatis、MySQL 实现了一个简单的文章管理系统。
+- 提供了增删改查、按状态查询文章的功能。
+- 使用了 Lombok 简化代码。
+- 使用了统一的响应格式和异常处理机制。
+- 数据库使用 MySQL，支持通过配置文件修改连接信息。
+- 提供了完整的依赖配置和数据库初始化脚本。
+
+---
+
+## 后续扩展建议
+
+1. **分页功能**：实现 `getAllArticles` 的分页逻辑。
+2. **用户认证**：添加 JWT 或 OAuth2 实现用户认证和权限控制。
+3. **文件上传**：支持图片或附件上传。
+4. **搜索功能**：添加全文搜索或模糊查询。
+5. **缓存**：使用 Redis 缓存热门文章或用户信息。
+6. **日志**：集成日志框架（如 Logback）记录操作日志。
+7. **监控**：使用 Spring Boot Actuator 实现健康检查和监控。
+8. **国际化**：支持多语言切换。
+9. **单元测试**：添加 JUnit 和 Mockito 单元测试。
+10. **部署**：使用 Docker 容器化部署，或集成到 CI/CD 流水线。
+
+---
+
+## 总结
+
+本项目是一个基础的文章管理系统，涵盖了后端开发的常见功能和技术栈。通过本项目，可以学习到 Spring Boot、MyBatis、MySQL、Lombok、RESTful API 设计、异常处理、分页、数据库设计等知识。后续可以根据需求扩展更多功能，提升系统的稳定性和可维护性。

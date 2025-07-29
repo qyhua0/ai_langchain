@@ -1,0 +1,175 @@
+# 代码生成工作流配置文件
+name: "全栈应用代码生成工作流"
+description: "自动生成前后端代码的完整工作流"
+output_dir: "./generated_code"
+log_dir: "./logs"
+
+# 上下文配置
+contexts:
+  frontend:
+    framework: "Vue 3 + iView UI"
+    requirements: |
+      - 使用Vue 3 Composition API
+      - 使用iView UI组件库，不要使用Element UI
+      - 代码风格遵循Vue 3最佳实践
+      - 支持响应式设计
+    example_files:
+      - "./context/frontend/UserTable.vue"
+      - "./context/frontend/UserForm.vue"
+      - "./context/frontend/api-service.js"
+      - "./context/frontend/composables.js"
+    documentation_files:
+      - "./context/frontend/vue3-best-practices.md"
+      - "./context/frontend/iview-components-guide.md"
+
+  backend:
+    framework: "Java 1.8 + Spring Boot 2.7 + MyBatis"
+    requirements: |
+      - 使用Spring Boot 2.7
+      - MyBatis配置使用XML方式编写SQL
+      - 遵循RESTful API设计规范
+      - 统一的响应格式和异常处理
+      - 使用MySQL 5.7数据库
+    example_files:
+      - "./context/backend/UserController.java"
+      - "./context/backend/UserService.java"
+      - "./context/backend/UserServiceImpl.java"
+      - "./context/backend/User.java"
+      - "./context/backend/Result.java"
+      - "./context/backend/GlobalExceptionHandler.java"
+    mybatis_files:
+      - "./context/backend/UserMapper.xml"
+      - "./context/backend/BaseMapper.xml"
+    configuration_files:
+      - "./context/backend/application.yml"
+      - "./context/backend/mybatis-config.xml"
+
+# 工作流步骤配置
+steps:
+  - name: "architecture_design"
+    llm_name: "qwen3:14b"
+    prompt_template: |
+      你是一个资深的系统架构师，请根据以下需求设计系统架构：
+      
+      需求描述：{requirement}
+      
+      请提供：
+      1. 系统整体架构设计
+      2. 数据库表结构设计（包含DDL语句）
+      3. 核心业务流程说明
+      4. 技术选型说明
+      
+      请确保设计符合以下原则：
+      - 可扩展性和可维护性
+      - 数据库设计遵循范式理论
+      - 考虑并发和性能优化
+      - 使用MySQL 5.7，InnoDB存储引擎，UTF8MB4字符集
+      - 合理的索引设计，遵循数据库命名规范
+    depends_on: []
+
+  - name: "api_definition"
+    llm_name: "qwen3:14b"
+    context_type: "backend"
+    prompt_template: |
+      根据系统架构设计，定义详细的API接口：
+      
+      架构设计：
+      {architecture_design}
+      
+      后端技术栈：
+      {context}
+      
+      请提供：
+      1. RESTful API接口清单
+      2. 请求/响应数据结构定义
+      3. 错误码定义
+      4. API文档示例
+      
+      要求：
+      - 遵循RESTful设计规范
+      - 统一的响应格式
+      - 完整的参数验证
+      - 合理的HTTP状态码使用
+    depends_on: ["architecture_design"]
+
+  - name: "frontend_generation"
+    llm_name: "qwen3:14b"
+    context_type: "frontend"
+    prompt_template: |
+      根据API定义生成Vue 3前端代码：
+      
+      API定义：
+      {api_definition}
+      
+      前端技术要求：
+      {context}
+      
+      请生成：
+      1. Vue 3组件代码（使用Composition API）
+      2. API调用封装
+      3. 路由配置
+      4. 状态管理（如需要）
+      5. 页面样式（使用iView UI组件）
+      
+      代码要求：
+      - 使用Vue 3 Composition API
+      - 使用iView UI组件库
+      - 代码结构清晰，注释完整
+      - 支持响应式设计
+      - 包含错误处理和loading状态
+    depends_on: ["api_definition"]
+
+  - name: "backend_generation"
+    llm_name: "qwen3:14b"
+    context_type: "backend"
+    prompt_template: |
+      根据API定义和架构设计生成Spring Boot后端代码：
+      
+      API定义：
+      {api_definition}
+      
+      架构设计：
+      {architecture_design}
+      
+      后端技术要求：
+      {context}
+      
+      请生成完整的后端代码：
+      1. Controller层代码
+      2. Service层代码
+      3. Mapper接口和XML文件
+      4. Entity实体类
+      5. DTO和VO类
+      6. 配置文件（application.yml）
+      7. 统一异常处理
+      8. 响应结果封装类
+      
+      代码要求：
+      - 使用Spring Boot 2.7
+      - MyBatis使用XML方式编写SQL
+      - 完整的参数验证
+      - 统一的异常处理
+      - 详细的代码注释
+      - 遵循阿里巴巴Java开发规范
+    depends_on: ["api_definition", "architecture_design"]
+
+  - name: "code_review"
+    llm_name: "qwen3:14b"
+    prompt_template: |
+      对生成的代码进行review和优化建议：
+      
+      前端代码：
+      {frontend_generation}
+      
+      后端代码：
+      {backend_generation}
+      
+      请从以下维度进行代码review：
+      1. 代码质量和规范性
+      2. 性能优化建议
+      3. 安全性检查
+      4. 可维护性评估
+      5. 最佳实践建议
+      
+      请提供具体的改进建议和修改方案。
+    depends_on: ["frontend_generation", "backend_generation"]
