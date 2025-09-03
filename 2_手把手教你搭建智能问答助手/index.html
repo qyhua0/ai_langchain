@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI助手前端</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #question-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #submit-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #answer-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI助手</h1>
+    <input type="text" id="question-input" placeholder="请输入您的问题...">
+    <button id="submit-btn">提问</button>
+    <div id="answer-container"></div>
+
+    <script>
+    document.getElementById('submit-btn').addEventListener('click', async () => {
+        const question = document.getElementById('question-input').value;
+        if (!question) return;
+        try {
+            const response = await fetch(`http://localhost:8001/ask`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({question: question})
+            });
+            const data = await response.json();
+            document.getElementById('answer-container').innerText = data.answer;
+        } catch (error) {
+            document.getElementById('answer-container').innerText = '请求失败: ' + error.message;
+        }
+        document.getElementById('question-input').value = '';
+    });
+</script>
+</body>
+</html>
