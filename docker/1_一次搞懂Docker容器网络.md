@@ -55,7 +55,7 @@ docker run --rm busybox nslookup www.google.com
 
 输出应该包含 **DNS 服务器地址** 和 **域名解析后的 IP**。
 
-📸 **执行截图（DNS 解析结果）**
+![alt text](img/nslookup_test.png)
 
 ---
 
@@ -73,7 +73,7 @@ docker run --rm curlimages/curl curl -I https://www.baidu.com
 
 输出应包含 `HTTP/1.1 200 OK`，这就说明容器已经能访问外部网站。
 
-📸 **执行截图（Curl 访问百度成功）**
+![alt text](img/curl_test.png)
 
 ---
 
@@ -99,7 +99,7 @@ sudo systemctl restart docker
 docker network prune
 ```
 
-📸 **执行截图（重启 Docker 并清理网络）**
+![alt text](img/docker_restart.png)
 
 ---
 
@@ -112,7 +112,6 @@ Docker 默认依赖 `iptables` 的 `MASQUERADE` 规则来做 NAT。如果被错�
 sudo iptables -t nat -L -n
 ```
 
-📸 **执行截图（iptables 规则检查）**
 
 ---
 
@@ -134,7 +133,6 @@ docker build -t net-test .
 docker run --rm net-test
 ```
 
-📸 **执行截图（自定义镜像测试成功）**
 
 ---
 
