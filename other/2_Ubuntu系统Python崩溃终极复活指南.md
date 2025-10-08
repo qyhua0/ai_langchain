@@ -96,14 +96,14 @@ wget http://ports.ubuntu.com/ubuntu-ports/pool/main/p/python3.8/python3.8_3.8.10
 sudo dpkg -i --force-all libpython3.8-minimal_3.8.10-0ubuntu1~20.04.18_arm64.deb
 ```
 
-[text](2_Ubuntu系统Python崩溃终极复活指南.md) ![text](../nginx/img/2_1install_python3-minimal_3.8.2-0ubuntu2_arm64.png)
+[](2_Ubuntu系统Python崩溃终极复活指南.md) ![text](../nginx/img/2_1install_python3-minimal_3.8.2-0ubuntu2_arm64.png)
 
 #### 2.2.2 第二步：安装 `python3.8-minimal`（恢复 `/usr/bin/python3.8`）
 
 ```bash
 sudo dpkg -i --force-all python3.8-minimal_3.8.10-0ubuntu1~20.04.18_arm64.deb
 ```
-[text](2_Ubuntu系统Python崩溃终极复活指南.md) ![text](../nginx/img/2_1install_python3-minimal_3.8.2-0ubuntu2_arm64.png) ![text](../nginx/img/2_2installpython3_3.8.2-0ubuntu2_arm64.png)
+[](2_Ubuntu系统Python崩溃终极复活指南.md) ![text](../nginx/img/2_1install_python3-minimal_3.8.2-0ubuntu2_arm64.png) 
 #### 2.2.3 第三步：验证 Python 3.8 是否复活
 
 ```bash
