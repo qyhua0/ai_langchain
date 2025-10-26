@@ -1,4 +1,4 @@
-# 从零部署自维护版 Uptime Kuma：Node.js 18 + PM2 + Nginx 全链路实战指南
+# 从零部署自维护版 Uptime Kuma：Node.js + PM2 + Nginx 全链路实战指南
 
 
 ## 1. 引言：为什么选择“非 Docker”部署？
